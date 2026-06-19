@@ -3,6 +3,7 @@
 #include "mem.h"
 #include "client.h"
 #include "arch.h"
+#include "log.h"
 
 guest_client_t *guest_client = NULL;
 
@@ -48,7 +49,11 @@ int guest_client_new(char *ac, guest_access_t ty)
             } else {
                 c->readmem = libvirt_readmem;
             }
+#ifdef __aarch64__
+            c->get_registers = NULL;
+#else
             c->get_registers = libvirt_get_registers;
+#endif
             break;
         case GUEST_MEMORY:
             if (file_client_init(ac))
@@ -65,7 +70,11 @@ int guest_client_new(char *ac, guest_access_t ty)
             } else {
                 c->readmem = qmp_readmem;
             }
+#ifdef __aarch64__
+            c->get_registers = NULL;
+#else
             c->get_registers = qmp_get_registers;
+#endif
             break;
     }
     guest_client = c;
